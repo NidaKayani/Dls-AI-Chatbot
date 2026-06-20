@@ -1,12 +1,17 @@
-import express from 'express';
-import { chat, chatStream } from '../controllers/chatController.js';
-import auth from '../middleware/auth.js';
-import limiter from '../middleware/rateLimit.js';
+/**
+ * src/routes/chat.js
+ * POST /api/ai/chat
+ * POST /api/ai/chat/stream
+ */
+
+const express = require('express');
+const { requireAuth } = require('../middleware/auth');
+const { chatRateLimiter } = require('../middleware/rateLimit');
+const { handleChat, handleChatStream } = require('../controllers/chatController');
 
 const router = express.Router();
 
-router.post('/chat', auth, limiter, chat);
-router.get('/chat/stream', auth, limiter, chatStream);
-router.post('/chat/stream', auth, limiter, chatStream);
+router.post('/chat', requireAuth, chatRateLimiter, handleChat);
+router.post('/chat/stream', requireAuth, chatRateLimiter, handleChatStream);
 
-export default router;
+module.exports = router;

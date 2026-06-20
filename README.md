@@ -299,3 +299,6 @@ Groq free-tier allows **14 400 requests/day** and **500 000 tokens/minute** (as 
 ## License
 
 Proprietary License. All rights reserved.
+
+
+--------------------------------------------------------------------------

@@ -1,37 +1,59 @@
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
+/**
+ * src/middleware/auth.js
+ * Verifies the JWT issued by the main DigitalLogicsStudio-Backend.
+ * Accepts the token either via the `Authorization: Bearer <token>` header
+ * or the `token` HTTP-only cookie — same contract as the main backend, so
+ * no second login is required.
+ */
 
-dotenv.config();
+const jwt = require('jsonwebtoken');
 
-const auth = (req, res, next) => {
-  // Allow localhost in development without auth
-  if (process.env.NODE_ENV === 'development' && req.hostname === 'localhost') {
-    req.user = {
-      id: 'dev-user',
-      name: 'Dev User',
-      email: 'dev@localhost'
-    };
-    return next();
+function extractToken(req) {
+  const authHeader = req.headers.authorization || req.headers.Authorization;
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.slice(7).trim();
+    if (token) return token;
   }
 
-  const authHeader = req.headers.authorization || '';
-  const token = req.cookies?.token || (authHeader.startsWith('Bearer ') ? authHeader.slice(7) : undefined);
+  if (req.cookies && req.cookies.token) {
+    return req.cookies.token;
+  }
+
+  return null;
+}
+
+function requireAuth(req, res, next) {
+  const token = extractToken(req);
 
   if (!token) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({
+      error: 'Authentication required. Provide a Bearer token or valid session cookie.',
+    });
   }
 
   if (!process.env.JWT_SECRET) {
-    return res.status(500).json({ error: 'Auth secret not configured' });
+    console.error('[auth.middleware] JWT_SECRET is not configured.');
+    return res.status(500).json({
+      error: 'Server misconfiguration: missing JWT secret.',
+    });
   }
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      const message = err.name === 'TokenExpiredError'
+        ? 'Session expired. Please log in again.'
+        : 'Invalid authentication token.';
+      return res.status(401).json({ error: message });
+    }
+
+    // Same shape the main backend signs: at minimum `id` / `name`.
     req.user = decoded;
     next();
-  } catch {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
-};
+  });
+}
 
-export default auth;
+module.exports = {
+  requireAuth,
+  extractToken,
+};

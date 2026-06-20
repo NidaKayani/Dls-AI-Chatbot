@@ -1,26 +1,42 @@
 # Code of Conduct
 
+## Our Pledge
+
+We, as contributors and maintainers of the DLS AI Chatbot, pledge to make participation in our project a welcoming, harassment-free experience for everyone, regardless of age, body size, disability, ethnicity, gender identity and expression, level of experience, nationality, personal appearance, race, religion, or sexual identity and orientation.
+
 ## Our Standards
 
-Contributors to this project are expected to:
+Examples of behavior that contributes to a positive environment:
 
-- Use welcoming and inclusive language
-- Respect differing viewpoints and experience levels
-- Accept constructive criticism
-- Focus on what benefits the project and its users
+- Using welcoming and inclusive language
+- Being respectful of differing viewpoints and experiences
+- Gracefully accepting constructive criticism
+- Focusing on what is best for the learners using Digital Logics Studio and the community
 
-Unacceptable behavior includes:
+Examples of unacceptable behavior:
 
-- Harassment, insults, or personal attacks
-- Publishing others' private information without permission
-- Trolling or deliberately disruptive behavior
+- The use of sexualized language or imagery, and unwelcome sexual attention
+- Trolling, insulting or derogatory comments, and personal or political attacks
+- Public or private harassment
+- Publishing others' private information without explicit permission
+- Other conduct which could reasonably be considered inappropriate in a professional setting
 
-## Enforcement
+## Our Responsibilities
 
-Project maintainers will remove, edit, or reject contributions that violate this code. Repeat violations result in a temporary or permanent ban.
+Maintainers are responsible for clarifying standards of acceptable behavior and are expected to take appropriate, fair corrective action in response to any instances of unacceptable behavior.
 
-Report violations to the maintainers via the repository's issue tracker or directly through GitHub.
+Maintainers have the right and responsibility to remove, edit, or reject comments, commits, code, issues, and other contributions that are not aligned with this Code of Conduct, and to temporarily or permanently ban any contributor for behaviors deemed inappropriate, threatening, offensive, or harmful.
 
 ## Scope
 
-This code applies in all project spaces, including issues, pull requests, and any public space where a contributor represents this project.
+This Code of Conduct applies within all project spaces (issues, pull requests, discussions) and in public spaces when an individual is representing the project or its community.
+
+## Enforcement
+
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the maintainers as described in [`SUPPORT.md`](./SUPPORT.md). All complaints will be reviewed and investigated promptly and fairly.
+
+Maintainers are obligated to respect the privacy and security of the reporter of any incident.
+
+## Attribution
+
+This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org/), version 2.1.

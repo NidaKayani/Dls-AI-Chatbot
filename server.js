@@ -1,10 +1,25 @@
-import app from './src/app.js';
-import dotenv from 'dotenv';
+/**
+ * server.js
+ * Entry point — loads environment variables and starts the HTTP server.
+ * Runs completely independently of the main DigitalLogicsStudio-Backend
+ * process; only the JWT_SECRET is shared between the two.
+ */
 
-dotenv.config();
+require('dotenv').config();
+
+const app = require('./src/app');
 
 const PORT = process.env.PORT || 5100;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const server = app.listen(PORT, () => {
+  console.log(`[dls-ai-chatbot] listening on port ${PORT} (${process.env.NODE_ENV || 'development'})`);
+});
+
+process.on('SIGTERM', () => {
+  console.log('[dls-ai-chatbot] SIGTERM received, shutting down gracefully.');
+  server.close(() => process.exit(0));
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[dls-ai-chatbot] Unhandled promise rejection:', reason);
 });

@@ -1,113 +1,133 @@
-import groq from '../config/groq.js';
-import buildSystemPrompt from '../prompts/systemPrompt.js';
+/**
+ * src/controllers/chatController.js
+ * Request handlers for POST /api/ai/chat and POST /api/ai/chat/stream.
+ */
 
-const parseContext = (value) => {
-  if (!value) {
-    return {};
+const { groqClient, GROQ_DEFAULTS } = require('../config/groq');
+const { buildSystemPrompt } = require('../prompts/systemPrompt');
+
+function validateBody(req, res) {
+  const { message } = req.body || {};
+
+  if (!message || typeof message !== 'string' || !message.trim()) {
+    res.status(400).json({ error: '"message" is required and must be a non-empty string.' });
+    return null;
   }
 
-  if (typeof value === 'string') {
-    try {
-      return JSON.parse(value);
-    } catch {
-      return {};
-    }
+  if (message.length > 4000) {
+    res.status(400).json({ error: '"message" is too long (max 4000 characters).' });
+    return null;
   }
 
-  if (typeof value === 'object') {
-    return value;
-  }
+  const context = (req.body && typeof req.body.context === 'object' && req.body.context) || {};
+  return { message: message.trim(), context };
+}
 
-  return {};
-};
+/**
+ * POST /api/ai/chat
+ * Standard, non-streaming completion.
+ */
+async function handleChat(req, res) {
+  const validated = validateBody(req, res);
+  if (!validated) return;
 
-const getRequestData = (req) => {
-  if (req.method === 'GET') {
-    return {
-      message: req.query.message,
-      context: parseContext(req.query.context),
-    };
-  }
-
-  return {
-    message: req.body?.message,
-    context: req.body?.context || {},
-  };
-};
-
-const createCompletion = async ({ user, context, message, stream = false }) => {
-  const systemPrompt = buildSystemPrompt(user, context);
-
-  return groq.chat.completions.create({
-    model: process.env.GROQ_MODEL || 'llama3-70b-8192',
-    max_tokens: parseInt(process.env.GROQ_MAX_TOKENS) || 1024,
-    temperature: parseFloat(process.env.GROQ_TEMPERATURE) || 0.5,
-    stream,
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: message },
-    ],
-  });
-};
-
-export const chat = async (req, res) => {
-  const { message, context = {} } = getRequestData(req);
-
-  if (!message) {
-    return res.status(400).json({ error: 'Message is required.' });
-  }
+  const { message, context } = validated;
+  const systemPrompt = buildSystemPrompt({ user: req.user, context });
 
   try {
-    const completion = await createCompletion({ user: req.user, context, message });
+    const completion = await groqClient.chat.completions.create({
+      model: GROQ_DEFAULTS.model,
+      max_tokens: GROQ_DEFAULTS.maxTokens,
+      temperature: GROQ_DEFAULTS.temperature,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: message },
+      ],
+    });
 
-    const reply = completion.choices[0]?.message?.content || 'No response generated.';
+    const reply = completion?.choices?.[0]?.message?.content?.trim();
+
+    if (!reply) {
+      return res.status(502).json({
+        error: 'Received an empty response from the AI provider. Please try again.',
+      });
+    }
 
     return res.status(200).json({
       reply,
-      model: completion.model,
-      tokensUsed: completion.usage?.total_tokens,
+      model: GROQ_DEFAULTS.model,
+      tokensUsed: completion?.usage?.total_tokens ?? null,
     });
-  } catch (error) {
-    console.error('Groq error:', error.message);
-    console.error('Full error:', error);
+  } catch (err) {
+    console.error('[chatController.handleChat] Groq request failed:', err?.message || err);
     return res.status(503).json({
-      error: 'AI service unavailable. Try again in a moment.',
-      details: error.message
+      error: 'The AI assistant is temporarily unavailable. Please try again shortly.',
     });
   }
-};
+}
 
-export const chatStream = async (req, res) => {
-  const { message, context = {} } = getRequestData(req);
+/**
+ * POST /api/ai/chat/stream
+ * Same request contract as handleChat, but streams the reply token-by-token
+ * over Server-Sent Events.
+ */
+async function handleChatStream(req, res) {
+  const validated = validateBody(req, res);
+  if (!validated) return;
 
-  if (!message) {
-    return res.status(400).json({ error: 'Message is required.' });
-  }
+  const { message, context } = validated;
+  const systemPrompt = buildSystemPrompt({ user: req.user, context });
 
-  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-cache, no-transform');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders?.();
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no', // disable proxy buffering (nginx) for real-time flush
+  });
+
+  const sendEvent = (data) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
+  let closed = false;
+  req.on('close', () => {
+    closed = true;
+  });
 
   try {
-    const completion = await createCompletion({ user: req.user, context, message, stream: true });
-    let reply = '';
+    const stream = await groqClient.chat.completions.create({
+      model: GROQ_DEFAULTS.model,
+      max_tokens: GROQ_DEFAULTS.maxTokens,
+      temperature: GROQ_DEFAULTS.temperature,
+      stream: true,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: message },
+      ],
+    });
 
-    for await (const chunk of completion) {
-      const token = chunk.choices?.[0]?.delta?.content;
-
+    for await (const chunk of stream) {
+      if (closed) break;
+      const token = chunk?.choices?.[0]?.delta?.content;
       if (token) {
-        reply += token;
-        res.write(`data: ${JSON.stringify({ token })}\n\n`);
+        sendEvent({ token });
       }
     }
 
-    res.write(`event: done\ndata: ${JSON.stringify({ reply })}\n\n`);
-    res.end();
-  } catch (error) {
-    console.error('Groq stream error:', error.message);
-    console.error('Full error:', error);
-    res.write(`event: error\ndata: ${JSON.stringify({ error: 'AI service unavailable. Try again in a moment.', details: error.message })}\n\n`);
-    res.end();
+    if (!closed) {
+      sendEvent({ done: true });
+      res.end();
+    }
+  } catch (err) {
+    console.error('[chatController.handleChatStream] Groq stream failed:', err?.message || err);
+    if (!closed) {
+      sendEvent({ error: 'The AI assistant is temporarily unavailable. Please try again shortly.' });
+      res.end();
+    }
   }
+}
+
+module.exports = {
+  handleChat,
+  handleChatStream,
 };

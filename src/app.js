@@ -1,45 +1,46 @@
-import express from 'express';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
-import jwt from 'jsonwebtoken';
-import chatRoutes from './routes/chat.js';
+/**
+ * src/app.js
+ * Express application setup: middleware, CORS, and route mounting.
+ * Exported separately from server.js so it can be imported in tests
+ * without binding a port.
+ */
 
-dotenv.config();
+const express = require('express');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+
+const chatRoutes = require('./routes/chat');
 
 const app = express();
 
+app.use(express.json({ limit: '100kb' }));
 app.use(cookieParser());
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
-app.use(express.json());
-app.use(express.static('.'));
 
-// Health check
-app.get('/', (req, res) => {
-  res.json({
-    status: 'ok',
-    service: 'DLS AI Chatbot',
-    message: 'Use POST /api/ai/chat or GET /api/ai/chat/stream to send messages',
-    devMode: process.env.NODE_ENV === 'development' ? 'enabled (localhost auth bypass)' : 'disabled'
-  });
-});
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    credentials: true,
+  })
+);
 
-// Simple auth endpoint for dev/testing
-app.post('/auth/login', (req, res) => {
-  const user = req.body || {};
-  const token = jwt.sign(
-    {
-      id: user.id || 'test-user',
-      name: user.name || 'Test User',
-      email: user.email || 'test@example.com'
-    },
-    process.env.JWT_SECRET,
-    { expiresIn: '24h' }
-  );
-  
-  res.json({ token, message: 'Use this token in Authorization: Bearer <token> header' });
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', service: 'dls-ai-chatbot' });
 });
 
 app.use('/api/ai', chatRoutes);
 
-export default app;
+// 404 fallback
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found.' });
+});
+
+// Centralized error handler (e.g. malformed JSON body)
+app.use((err, req, res, next) => {
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Malformed JSON in request body.' });
+  }
+  console.error('[app] Unhandled error:', err);
+  return res.status(500).json({ error: 'Internal server error.' });
+});
+
+module.exports = app;
