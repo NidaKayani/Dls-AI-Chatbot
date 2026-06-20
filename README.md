@@ -1,6 +1,6 @@
 # DLS AI Chatbot
 
-An intelligent, context-aware AI assistant built for **Digital Logics Studio (Boolforge)**. Powered by the [Groq API](https://console.groq.com/), it delivers fast and highly personalized responses on digital logic, Boolean algebra, number systems, sequential circuits, and all topics covered in the DLS curriculum.
+An intelligent, context-aware AI assistant built for **Digital Logics Studio (Boolforge)**. Powered by the [Groq API](https://console.groq.com/), it delivers fast and highly personalized responses on digital logic, Boolean algebra, number systems, sequential circuits, and all topics covered in the DLS curriculum. The repo now also includes a local chatbot UI at [index.html](index.html).
 
 ---
 
@@ -34,7 +34,7 @@ DigitalLogicsStudio-AI/
 ## Features
 
 - **Personalized responses** — The system prompt is dynamically assembled from the user's JWT profile, their current topic, recently visited pages, and tools they have interacted with, so every answer is relevant to exactly where they are in the curriculum.
-- **Groq-powered speed** — Uses `llama3-70b-8192` via Groq's inference API for near-instant completions, even for complex logic explanations.
+- **Groq-powered speed** — Uses `llama-3.3-70b-versatile` via Groq's inference API for near-instant completions, even for complex logic explanations.
 - **Curriculum-aware context** — The chatbot knows the full DLS topic tree (Boolean Algebra, Number Systems, Arithmetic Circuits, Memory, Sequential Circuits) and steers answers to match the learner's current module.
 - **Streaming support** — Optional SSE streaming endpoint for character-by-character output, giving users the feel of a live expert typing back to them.
 - **Local onboarding** — The bundled UI asks for the learner's name, a self-assessed level if known, and a topic goal before chatting.
@@ -51,7 +51,7 @@ DigitalLogicsStudio-AI/
 | Runtime | Node.js 20 |
 | Framework | Express |
 | AI Provider | Groq Cloud API |
-| Model | `llama3-70b-8192` (default) |
+| Model | `llama-3.3-70b-versatile` (default) |
 | Auth | JWT (shared secret with main backend) |
 | Rate Limiting | `express-rate-limit` |
 | HTTP Client | `groq-sdk` (official) |
@@ -69,7 +69,7 @@ NODE_ENV=development
 
 # Groq
 GROQ_API_KEY=your-groq-api-key-here
-GROQ_MODEL=llama3-70b-8192
+GROQ_MODEL=llama-3.3-70b-versatile
 GROQ_MAX_TOKENS=1024
 GROQ_TEMPERATURE=0.5
 
@@ -249,7 +249,7 @@ export const sendMessage = (message, context) =>
 
 Add `REACT_APP_AI_URL=http://localhost:5100/api/ai` to Boolforge's `.env`.
 
-For local testing, point your frontend at `http://localhost:5100/api/ai`. This repository does not include a bundled `index.html` UI file — add a simple local UI that posts to the API if desired.
+For local testing, you can also just open [index.html](index.html) in the browser through the Express server at `http://localhost:5100/index.html`.
 
 ---
 
@@ -273,7 +273,7 @@ Groq supports several models. Swap `GROQ_MODEL` in `.env` to change:
 
 | Model | Best for | Context window |
 |---|---|---|
-| `llama3-70b-8192` | Deep, accurate explanations (default) | 131 072 tokens |
+| `llama-3.3-70b-versatile` | Deep, accurate explanations (default) | 131 072 tokens |
 | `llama3-8b-8192` | Fast lightweight answers | 8 192 tokens |
 | `llama-3.1-8b-instant` | Fast lightweight answers | 131 072 tokens |
 | `openai/gpt-oss-120b` | Long multi-turn conversations | 131 072 tokens |
