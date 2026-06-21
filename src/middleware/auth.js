@@ -26,7 +26,27 @@ function extractToken(req) {
 function requireAuth(req, res, next) {
   const token = extractToken(req);
 
+  const isLocalhostRequest = (() => {
+    try {
+      const host = (req.hostname || '').toLowerCase();
+      const origin = (req.headers && req.headers.origin) || '';
+      const ip = (req.ip || '').toString();
+      if (host === 'localhost') return true;
+      if (origin && origin.includes('localhost')) return true;
+      if (ip === '::1' || ip === '127.0.0.1') return true;
+    } catch (e) {
+      // ignore and fall through
+    }
+    return false;
+  })();
+
   if (!token) {
+    // Allow requests from localhost during development to ease local testing
+    if (process.env.NODE_ENV === 'development' && isLocalhostRequest) {
+      req.user = null; // proceed unauthenticated for local dev
+      return next();
+    }
+
     return res.status(401).json({
       error: 'Authentication required. Provide a Bearer token or valid session cookie.',
     });
