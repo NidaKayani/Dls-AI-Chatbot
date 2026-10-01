@@ -83,5 +83,40 @@
     "sha256": "5c682bd28cede1dbc7c27c701d49b4eaa8caf9b53de417877fb1fdf1dbc71cf7",
     "chunkCount": 76,
     "ingestedAt": "2026-10-01T17:20:44.440Z"
+  },
+  "COAL/pcasm-book.txt": {
+    "sha256": "7a10844ec2289523327c229cfe60d1682a6d71e373d66703563671b5efcb4603",
+    "chunkCount": 127,
+    "ingestedAt": "2026-10-01T22:17:31.954Z"
+  },
+  "DLD/068c445a4f08f5fb9a8134062b209a2a_l11_maj_min_fsm.txt": {
+    "sha256": "cd59a8cb547f4fbeb6dafa1f19b1f6dae0b870f4bda109f30c76493100c767d7",
+    "chunkCount": 3,
+    "ingestedAt": "2026-10-01T22:17:32.528Z"
+  },
+  "DLD/340fab3bd54502c96ef177100c99b0f8_l2_combi_logic.txt": {
+    "sha256": "ba27d559cc02c6eebf4451dac8deff0c397362c9dd9d7401c4721edda9921fdd",
+    "chunkCount": 8,
+    "ingestedAt": "2026-10-01T22:17:33.215Z"
+  },
+  "DLD/38df2a594fdb6d0a95990dcb1229957d_l16_print.txt": {
+    "sha256": "277891d803b8164a0d936e5d6fb7f9bdf1ef4eeee29a579a6fe4161a0cc00fa2",
+    "chunkCount": 5,
+    "ingestedAt": "2026-10-01T22:17:33.522Z"
+  },
+  "DLD/7b4d1c017578e7e20e050168444382e8_l4_seql_blocks.txt": {
+    "sha256": "048f4c924cec69b6e6f0a51e041f33d836f1c022e305ec0db68abb0500454db4",
+    "chunkCount": 5,
+    "ingestedAt": "2026-10-01T22:17:33.939Z"
+  },
+  "DLD/901220_logic notes.txt": {
+    "sha256": "16a603b47180d7dbbe827b1fe7ef0cb6f18e81360151ad22882a8ee7bc65cc1c",
+    "chunkCount": 21,
+    "ingestedAt": "2026-10-01T22:17:34.765Z"
+  },
+  "DLD/96464ab2374c6fde8d53470bf4c021c2_l13_video.txt": {
+    "sha256": "a788acb7786af8651875700626925912b768ca1de77a2dea41fd0c7399f28823",
+    "chunkCount": 6,
+    "ingestedAt": "2026-10-01T22:17:35.258Z"
   }
 }
