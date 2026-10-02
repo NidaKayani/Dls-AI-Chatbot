@@ -138,5 +138,10 @@
     "sha256": "2bdf97213b503f14c60d3f538bcf0fd5752a14efb9fda5881909de9af44e0d1f",
     "chunkCount": 503,
     "ingestedAt": "2026-10-02T02:02:27.498Z"
+  },
+  "DLD/David_Harris_Sarah_Harris-Digital_Design_and_Computer_Architecture-EN.txt": {
+    "sha256": "1788ad2c5017c5ed28ba415e6d81c85f217bf1a532f0fe92cfbc6182bc01c5e8",
+    "chunkCount": 465,
+    "ingestedAt": "2026-10-02T08:03:59.018Z"
   }
 }
